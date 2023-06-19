@@ -1,0 +1,206 @@
+.chat {
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    height: 100vh;
+
+    .wrapper {
+        height: 100vh;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        box-shadow: inset 0px 0px 0px 1px #e5e5ea;
+    }
+
+    .header {
+        box-shadow: inset 0px -1px 0px #e5e5ea;
+        text-align: center;
+        padding: 16px 0px 12px 0;
+        position: relative;
+
+        .text {
+            margin: auto;
+            text-align: center;
+            .name {
+                font-weight: 600;
+                font-size: 14px;
+                line-height: 18px;
+                color: #2c2c2e;
+                margin-bottom: 4px;
+            }
+            .sub {
+                font-size: 12px;
+                line-height: 16px;
+                color: #666668;
+            }
+        }
+
+        a {
+            position: absolute;
+            top: 0;
+            right: 22px;
+            bottom: 0;
+            margin: auto;
+            height: fit-content;
+        }
+    }
+    .history {
+        flex: 1;
+        padding: 18px 18px 0 18px;
+        overflow-y: scroll;
+        &::-webkit-scrollbar {
+            display: none;
+        }
+        .space {
+            height: 4px;
+        }
+    }
+    .date {
+        font-size: 12px;
+        line-height: 16px;
+        text-align: center;
+        color: #666668;
+        padding: 16px 0;
+    }
+
+    .item {
+        max-width: 60%;
+        display: flex;
+        align-items: start;
+        margin-right: auto;
+        margin-bottom: 12px;
+        .content {
+            background: #f2f2f7;
+            border-radius: 0px 6px 6px 6px;
+            padding: 4px 8px 4px 6px;
+        }
+        .corner {
+            width: 10px;
+            margin-right: -1.2px;
+        }
+
+        .username {
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 18px;
+            color: #2c2c2e;
+            margin-bottom: 4px;
+        }
+        .message {
+            font-size: 14px;
+            line-height: 20px;
+            color: #2c2c2e;
+            padding-right: 48px;
+        }
+        .panel {
+            width: max-content;
+            margin-left: auto;
+        }
+        .time {
+            font-weight: 300;
+            font-size: 12px;
+            line-height: 16px;
+            color: #666668;
+        }
+    }
+
+    .item-right {
+        max-width: 65%;
+        display: flex;
+        align-items: start;
+        margin-left: auto;
+        margin-bottom: 12px;
+        .content {
+            margin-left: auto;
+            background: #5d5fef;
+            background: #5d5fef;
+            border-radius: 6px 0px 6px 6px;
+            padding: 4px 10px 4px 8px;
+        }
+        .corner {
+            width: 10px;
+            margin-left: -1.2px;
+        }
+        .message {
+            font-size: 14px;
+            line-height: 20px;
+            color: #ffffff;
+            padding-right: 60px;
+        }
+        .panel {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            width: max-content;
+        }
+        .time {
+            font-weight: 300;
+            font-size: 12px;
+            line-height: 16px;
+            color: #ffffff;
+            margin-right: 4px;
+        }
+        .status {
+            width: 20px;
+            text-align: center;
+            img {
+                height: 10px;
+            }
+        }
+    }
+
+    .write {
+        background: #ffffff;
+        box-shadow: inset 0px 0px 0px 1px #e5e5ea;
+        padding: 14px 11px 14px 15px;
+        align-self: flex-end;
+        width: 100%;
+        height: fit-content;
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+        input {
+            border: none;
+            width: 100%;
+            padding-right: 15px;
+            font-size: 14px;
+            line-height: 20px;
+            color: #2c2c2e;
+            &::placeholder {
+                color: #666668;
+            }
+        }
+
+        button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            &:focus {
+                outline: none;
+            }
+        }
+        .send-icon {
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
+        }
+    }
+}
+
+
+@media only screen and (min-width: 768px) {
+    .chat {
+        padding: 0 70px;
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    .chat {
+        .wrapper{
+            max-width:  546px;
+        }
+    }
+}
+
