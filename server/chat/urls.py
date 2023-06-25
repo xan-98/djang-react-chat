@@ -1,9 +1,10 @@
 from django.urls import path
-from .views import RoomView,MessageView
+
+from .views import MessageViewSet, RoomViewSet
 
 urlpatterns = [
-	path('rooms/<int:pk>', RoomView.as_view()),
-	path('rooms/', RoomView.as_view()),
-	path('messages/<int:room>', MessageView.as_view()),
-	path('messages/', MessageView.as_view()),
+	path('rooms/<int:pk>', RoomViewSet.as_view({'delete':'destroy'})),
+	path('rooms/', RoomViewSet.as_view({'get': 'list','post': 'create'})),
+	path('messages/<int:pk>', MessageViewSet.as_view({'get': 'list','delete':'destroy'})),
+	path('messages/', MessageViewSet.as_view({'post': 'create'})),
 ]

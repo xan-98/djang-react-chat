@@ -1,9 +1,9 @@
-import ServerUrl from "./serverUrl";
 import ApiUtils from "./apiUtils";
 import HttpMethods from "./httpMethods";
+import ServerUrl from "./serverUrl";
 
 const ApiEndpoints = "api/v1/";
-const base_url =  ServerUrl.BASE_URL + ApiEndpoints;
+const base_url = ServerUrl.BASE_URL + ApiEndpoints;
 
 const sendGetRequest = (relativeUrl) => {
   const url = base_url + relativeUrl;
@@ -14,16 +14,16 @@ const sendGetRequest = (relativeUrl) => {
     .catch((error) => console.log(error));
 };
 
-const sendPostRequest = (relativeUrl, requestBody, isLogin=true) => {
+const sendPostRequest = (relativeUrl, requestBody, isLogin = true) => {
   const url = base_url + relativeUrl;
-  requestBody = JSON.stringify(requestBody)
+  requestBody = JSON.stringify(requestBody);
   let options = {
     method: HttpMethods.POST,
     body: requestBody,
   };
 
   options.headers = ApiUtils.getPostRequestHeader();
-  if (isLogin){
+  if (isLogin) {
     options.headers = {
       ...options.headers,
       ...ApiUtils.getAuthHeader(),

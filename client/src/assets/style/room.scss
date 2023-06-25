@@ -1,11 +1,12 @@
 .room {
+    $self: &;
     background: #f4f4f4;
     position: relative;
-    .form-wrapper {
+    .center-form {
         box-shadow: inset 0px 0px 0px 1px #e5e5ea;
         padding-bottom: 20px;
     }
-    .navbar {
+    &__navbar {
         position: absolute;
         top: 24px;
         right: 46px;
@@ -13,7 +14,7 @@
         cursor: pointer;
     }
 
-    .list {
+    &__list {
         margin: 0 30px 10px;
         max-height: calc(100vh - 200px);
         overflow-y: auto;
@@ -26,11 +27,10 @@
             border: 4px solid rgba(0, 0, 0, 0);
             background-clip: padding-box;
             border-radius: 9999px;
-            background-color: #7879f1;;
+            background-color: #7879f1;
         }
 
-
-        .item {
+        #{ $self }__item {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -52,7 +52,7 @@
 
 @media only screen and (min-width: 768px) {
     .room {
-        .navbar {
+        &__navbar {
             right: 100px;
         }
     }
@@ -60,7 +60,7 @@
 
 @media only screen and (min-width: 992px) {
     .room {
-        .navbar {
+        &__navbar {
             right: 182px;
         }
     }

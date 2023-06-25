@@ -1,11 +1,11 @@
+from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 
-class GetUserView(APIView):
-    def get(self, request, pk=None, *args, **kwargs): 
+class GetUserViewSet(viewsets.ViewSet):
+    def retrieve(self, request, pk=None):
         user = {
             'id':request.user.id,
             'username':request.user.username,
         }
-        return Response({'data':user})    
+        return Response({'data':user})

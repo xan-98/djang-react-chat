@@ -1,145 +1,125 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Room from "./Room";
-import Chat from "./Chat";
-import CommonUtil from "./util/commonUtil";
 import { useState } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Chat from "./Chat";
+import Page404 from "./Page404";
+import Room from "./Room";
 import ServerUrl from "./api/serverUrl";
+import CommonUtil from "./util/commonUtil";
 
-var socket = null
+var socket = null;
 
 const Router = () => {
-    const [roomList, setRoomList] = useState([]);
-    const [newMessages, setNewMessages] = useState([]);
-    const [readMessage, setReadMessage] = useState('');
+  const [roomList, setRoomList] = useState([]);
+  const [newMessages, setNewMessages] = useState([]);
+  const [readMessage, setReadMessage] = useState("");
+  const user = CommonUtil.getUser();
 
-    const user = CommonUtil.getUser()
-    if (socket == null) {
-        socket = new WebSocket(
-            ServerUrl.WS_BASE_URL + `ws/users/${user.id}/chat/`
-        );
+  const token = CommonUtil.getToken();
+  if (socket == null) {
+    socket = new WebSocket(
+      ServerUrl.WS_BASE_URL + `ws/users/chat/?token=${token}`
+    );
+  }
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.action == "list_room") {
+      setRoomList(data.list);
     }
 
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.action == 'list_room') {
-            setRoomList(data.list)
-        }
-
-        if (data.action == 'message') {
-            setReadMessage('')
-            setNewMessages([data,...newMessages])
-        }
-        
-        if (data.action == 'read') {
-            setReadMessage(data.room)
-        }
+    if (data.action == "message") {
+      setReadMessage("");
+      setNewMessages([data, ...newMessages]);
     }
 
-    const addRoom = (name) => {
-        socket.send(
+    if (data.action == "read") {
+      setReadMessage(data.room);
+    }
+  };
+
+  const joinRoom = (id) => {
+    if (socket.readyState == WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          action: "join_room",
+          room_id: id,
+        })
+      );
+    } else {
+      try {
+        setTimeout(() => {
+          socket.send(
             JSON.stringify({
-                action: 'new_room',
-                room_name: name
+              action: "join_room",
+              room_id: id,
             })
-        );
+          );
+        }, 400);
+      } catch (error) {
+        console.log(error);
+      }
     }
+  };
 
-    const joinRoom = (id) => {
-        if (socket.readyState == WebSocket.OPEN){
-            socket.send(
-                JSON.stringify({
-                    action: 'join_room',
-                    room_id: id
-                })
-            );
-        }else{
-            try {
-                setTimeout(()=>{
-                    socket.send(
-                        JSON.stringify({
-                            action: 'join_room',
-                            room_id: id
-                        })
-                    );
-                },400)
-            } catch (error) {
-                console.log(error);
-            }
-        }
-    }
+  const exitRoom = (id) => {
+    socket.send(
+      JSON.stringify({
+        action: "exit_room",
+        room_id: id,
+      })
+    );
+  };
 
-    const exitRoom = (id) => {
-        socket.send(
+  const getRoom = (id) => {
+    return roomList.find((x) => x.id == id);
+  };
+
+  const sendRead = (roomid) => {
+    if (socket.readyState == WebSocket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          action: "read",
+          room: roomid,
+        })
+      );
+    } else {
+      try {
+        setTimeout(() => {
+          socket.send(
             JSON.stringify({
-                action: 'exit_room',
-                room_id: id
+              action: "read",
+              room: roomid,
             })
-        );
+          );
+        }, 400);
+      } catch (error) {
+        console.log(error);
+      }
     }
+  };
 
-    const getRoom = (id) => {
-        return roomList.find(x => x.id == id)
-    }
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Room roomList={roomList} />} />
+        <Route
+          path="/room/:id"
+          element={
+            <Chat
+              user={user}
+              joinRoom={joinRoom}
+              exitRoom={exitRoom}
+              getRoom={getRoom}
+              newMessages={newMessages}
+              readMessage={readMessage}
+              sendRead={sendRead}
+            />
+          }
+        />
+        <Route path="*" element={<Page404/>} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
-    const sendMessage = (roomid,userId,message) => {
-        socket.send(
-            JSON.stringify({
-                action: 'message',
-                room: roomid,
-                user: userId,
-                message:message
-            })
-        );
-    }
-
-    const sendRead = (roomid,userId) => {
-        if (socket.readyState == WebSocket.OPEN){
-            socket.send(
-                JSON.stringify({
-                    action: 'read',
-                    room: roomid,
-                    user: userId,
-                })
-            );
-        }else{
-            try {
-                setTimeout(()=>{
-                    socket.send(
-                        JSON.stringify({
-                            action: 'read',
-                            room: roomid,
-                            user: userId,
-                        })
-                    );
-                },400)
-            } catch (error) {
-                console.log(error);
-            }
-        }
-        
-    }
-
-    return (
-
-        <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<Room addRoom={addRoom} roomList={roomList} />} />
-                <Route path="/room/:id" 
-                    element={<Chat 
-                    user={user}
-                    joinRoom={joinRoom}
-                    exitRoom={exitRoom}
-                    getRoom={getRoom}
-                    sendMessage={sendMessage} 
-                    newMessages={newMessages} 
-                    readMessage={readMessage} 
-                    sendRead={sendRead}
-                    />} />
-            </Routes>
-        </BrowserRouter>
-    )
-}
-
-
-
-export default Router
+export default Router;

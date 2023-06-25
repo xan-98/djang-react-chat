@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import ChatRoom,ChatMessage
+
+from .models import ChatMessage, ChatRoom
+
 
 class ChatRoomSerializer(serializers.ModelSerializer):
     member = serializers.SerializerMethodField()
@@ -8,8 +10,8 @@ class ChatRoomSerializer(serializers.ModelSerializer):
         fields = ['id', 'name','member']
 
     def get_member(self, obj):
-        memberCount = obj.member.all().count()
-        return memberCount
+        member_count = obj.member.all().count()
+        return member_count
 
 class MessageSerializer(serializers.ModelSerializer):
     user_id =  serializers.ReadOnlyField(source='user.id') 

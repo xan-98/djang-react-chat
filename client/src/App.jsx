@@ -1,39 +1,29 @@
-import Auth from './Auth';
-import CommonUtil from "./util/commonUtil";
 import { useEffect, useState } from "react";
+import Auth from "./Auth";
+import Router from "./Router";
 import Loading from "./components/Loading";
-import Router from './Router';
+import CommonUtil from "./util/commonUtil";
 
 const App = () => {
-    const token = CommonUtil.getToken();
-    const [user, setUser] = useState({});
-    
-    const getUser = async () => {
-        if (user != {} && token) {
-            const data = await CommonUtil.getUserServer()
-            setUser(data)
-        }
+  const token = CommonUtil.getToken();
+  const [user, setUser] = useState({});
+
+  const getUser = async () => {
+    if (user != {} && token) {
+      const data = await CommonUtil.getUserServer();
+      setUser(data);
     }
+  };
 
-    useEffect(() => {
-        getUser()
-    }, []);
+  useEffect(() => {
+    getUser();
+  }, []);
 
-    if (!token) {
-        return <Auth />
-    }
+  if (!token) {
+    return <Auth />;
+  }
 
-    return (
-        <>
-            {
-                user.id ?
-                    <Router />
-                    :
-                    <Loading />
-            }
-        </>
-    )
-}
+  return <>{user.id ? <Router /> : <Loading />}</>;
+};
 
-export default App
-
+export default App;

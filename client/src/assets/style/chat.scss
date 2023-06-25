@@ -1,10 +1,11 @@
 .chat {
+    $self: &;
     background-color: #f4f4f4;
     display: flex;
     justify-content: center;
     height: 100vh;
 
-    .wrapper {
+    &__wrapper {
         height: 100vh;
         width: 100%;
         display: flex;
@@ -13,23 +14,23 @@
         box-shadow: inset 0px 0px 0px 1px #e5e5ea;
     }
 
-    .header {
+    &__header {
         box-shadow: inset 0px -1px 0px #e5e5ea;
         text-align: center;
         padding: 16px 0px 12px 0;
         position: relative;
 
-        .text {
+        #{ $self }__text {
             margin: auto;
             text-align: center;
-            .name {
+            #{ $self }__name {
                 font-weight: 600;
                 font-size: 14px;
                 line-height: 18px;
                 color: #2c2c2e;
                 margin-bottom: 4px;
             }
-            .sub {
+            #{ $self }__sub {
                 font-size: 12px;
                 line-height: 16px;
                 color: #666668;
@@ -45,18 +46,28 @@
             height: fit-content;
         }
     }
-    .history {
+    &__history {
         flex: 1;
         padding: 18px 18px 0 18px;
         overflow-y: scroll;
         &::-webkit-scrollbar {
             display: none;
         }
-        .space {
+        #{ $self }__space {
             height: 4px;
         }
+
+        #{ $self }__load {
+            background-color: #f2f2f7;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 10px 20px;
+            margin: 0 auto;
+            width: max-content;
+        }
     }
-    .date {
+    &__date {
         font-size: 12px;
         line-height: 16px;
         text-align: center;
@@ -64,40 +75,40 @@
         padding: 16px 0;
     }
 
-    .item {
+    &__item {
         max-width: 60%;
         display: flex;
         align-items: start;
         margin-right: auto;
         margin-bottom: 12px;
-        .content {
+        #{ $self }__content {
             background: #f2f2f7;
             border-radius: 0px 6px 6px 6px;
             padding: 4px 8px 4px 6px;
         }
-        .corner {
+        #{ $self }__corner {
             width: 10px;
             margin-right: -1.2px;
         }
 
-        .username {
+        #{ $self }__username {
             font-weight: 600;
             font-size: 14px;
             line-height: 18px;
             color: #2c2c2e;
             margin-bottom: 4px;
         }
-        .message {
+        #{ $self }__message {
             font-size: 14px;
             line-height: 20px;
             color: #2c2c2e;
             padding-right: 48px;
         }
-        .panel {
+        #{ $self }__panel {
             width: max-content;
             margin-left: auto;
         }
-        .time {
+        #{ $self }__time {
             font-weight: 300;
             font-size: 12px;
             line-height: 16px;
@@ -105,43 +116,43 @@
         }
     }
 
-    .item-right {
+    &__item-right {
         max-width: 65%;
         display: flex;
         align-items: start;
         margin-left: auto;
         margin-bottom: 12px;
-        .content {
+        #{ $self }__content {
             margin-left: auto;
             background: #5d5fef;
             background: #5d5fef;
             border-radius: 6px 0px 6px 6px;
             padding: 4px 10px 4px 8px;
         }
-        .corner {
+        #{ $self }__corner {
             width: 10px;
             margin-left: -1.2px;
         }
-        .message {
+        #{ $self }__message {
             font-size: 14px;
             line-height: 20px;
             color: #ffffff;
             padding-right: 60px;
         }
-        .panel {
+        #{ $self }__panel {
             display: flex;
             align-items: center;
             margin-left: auto;
             width: max-content;
         }
-        .time {
+        #{ $self }__time {
             font-weight: 300;
             font-size: 12px;
             line-height: 16px;
             color: #ffffff;
             margin-right: 4px;
         }
-        .status {
+        #{ $self }__status {
             width: 20px;
             text-align: center;
             img {
@@ -150,14 +161,14 @@
         }
     }
 
-    .write {
+    &__write {
         background: #ffffff;
         box-shadow: inset 0px 0px 0px 1px #e5e5ea;
         padding: 14px 11px 14px 15px;
         align-self: flex-end;
         width: 100%;
         height: fit-content;
-        .input-group {
+        #{ $self }__input-group {
             display: flex;
             align-items: center;
         }
@@ -181,14 +192,13 @@
                 outline: none;
             }
         }
-        .send-icon {
+        #{ $self }__send-icon {
             width: 16px;
             height: 16px;
             vertical-align: middle;
         }
     }
 }
-
 
 @media only screen and (min-width: 768px) {
     .chat {
@@ -198,9 +208,8 @@
 
 @media only screen and (min-width: 992px) {
     .chat {
-        .wrapper{
-            max-width:  546px;
+        &__wrapper {
+            max-width: 546px;
         }
     }
 }
-

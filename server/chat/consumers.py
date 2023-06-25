@@ -1,15 +1,14 @@
 import json
+
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from chat.models import ChatRoom, ChatMessage
-# from apps.user.models import User, OnlineUser
+from chat.models import ChatMessage, ChatRoom
 from django.contrib.auth.models import User
-from .serializers import ChatRoomSerializer,MessageSerializer
+
+from .serializers import ChatRoomSerializer, MessageSerializer
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
-	def getUser(self, userId):
-		return User.objects.get(id=userId)
-
 	def getRoomList(self):
 		room_list = ChatRoom.objects.all()
 		serializer = ChatRoomSerializer(room_list, many=True)
@@ -23,23 +22,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
 	
 	def joinRoom(self, room_id):
 		room_object = ChatRoom.objects.get(id=room_id)
-		room_object.member.add(self.userId)
+		room_object.member.add(self.user.id)
 
 
-	def exitRoom(self,userId):
+	def exitRoom(self,user_id):
 
 		try:
-			rooms = ChatRoom.objects.filter(member=userId)
-			user = User.objects.get(id = userId)
+			rooms = ChatRoom.objects.filter(member=user_id)
+			user = User.objects.get(id = user_id)
 			for room in rooms:
 				room.member.remove(user)
 		except:
 			pass
 
-	def saveMessage(self, message, userId, roomId):
+	def saveMessage(self, message, user_id, room_id):
 		chatMessageObj = ChatMessage.objects.create(
-			room_id = roomId, 
-			user_id = userId,
+			room_id = room_id, 
+			user_id = user_id,
 			message=message,
 		)
 		chatMessageObj.save()
@@ -47,11 +46,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		data['action'] = 'message'
 		return data
 	
-	def readMessage(self, userid, roomId):
-		ChatMessage.objects.exclude(user_id=userid).filter(room_id = roomId).update(status=True)
+	def readMessage(self, user_id, room_id):
+		ChatMessage.objects.exclude(user_id=user_id).filter(room_id = room_id).update(status=True)
 		return {
 			'action' : 'read',
-			'room' : roomId
+			'room' : room_id
 		}
 
 	async def sendRoomList(self, toSelf=False):
@@ -67,18 +66,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		await self.channel_layer.group_send('room_list', chatMessage)
 
 	async def connect(self):
-		self.userId = self.scope['url_route']['kwargs']['userId']
+		self.user = self.scope['user']
 		self.userRooms = await database_sync_to_async(
 			list
-		)(ChatRoom.objects.filter(member=self.userId))
+		)(ChatRoom.objects.filter(member=self.user.id))
 		for room in self.userRooms:
 			await self.channel_layer.group_add(
 				'room_' + str(room.id),
 				self.channel_name
 			)
 		await self.channel_layer.group_add('room_list', self.channel_name)
-		self.user = await database_sync_to_async(self.getUser)(self.userId)
-		# await database_sync_to_async(self.addOnlineUser)(self.user)
 		await self.sendRoomList()
 		await self.accept()
 
@@ -86,29 +83,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		# await self.exitRoom()
 		self.userRooms = await database_sync_to_async(
 			list
-		)(ChatRoom.objects.filter(member=self.userId))
+		)(ChatRoom.objects.filter(member=self.user.id))
 
 		for room in self.userRooms:
 			await self.channel_layer.group_discard(
 				'room_' + str(room.id),
 				self.channel_name
 			)
-		print('Disconnent --->', self.userId)
-		await database_sync_to_async(self.exitRoom)(self.userId)
+		print('Disconnent --->', self.user.id)
+		await database_sync_to_async(self.exitRoom)(self.user.id)
 		await self.sendRoomList()
 	async def receive(self, text_data):
 		text_data_json = json.loads(text_data)
 		action = text_data_json['action']
-		# chatMessage = {}
+
 		if action == 'message':
-			roomId = text_data_json['room']
+			room_id = text_data_json['room']
 			message = text_data_json['message']
-			userId = text_data_json['user']
 			chatMessage = await database_sync_to_async(
 				self.saveMessage
-			)(message, userId, roomId)
+			)(message, self.user.id, room_id)
 			await self.channel_layer.group_send(
-				'room_' + str(roomId),
+				'room_' + str(room_id),
 					{
 						'type': 'chat_message',
 						'message': chatMessage
@@ -116,13 +112,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 				)
 		
 		elif action == 'read':
-			roomId = text_data_json['room']
-			userId = text_data_json['user']
+			room_id = text_data_json['room']
 			chatMessage = await database_sync_to_async(
 				self.readMessage
-			)(userId, roomId)
+			)(self.user.id, room_id)
 			await self.channel_layer.group_send(
-				'room_' + str(roomId),
+				'room_' + str(room_id),
 					{
 						'type': 'chat_message',
 						'message': chatMessage
@@ -147,11 +142,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 					'room_' + str(room_id),
 					self.channel_name
 				)
-				await database_sync_to_async(self.exitRoom)(self.userId)
+				await database_sync_to_async(self.exitRoom)(self.user.id)
 				await self.sendRoomList()
-		# elif action == 'typing':
-		# 	chatMessage = text_data_json
-		
 
 	async def chat_message(self, event):
 		message = event['message']

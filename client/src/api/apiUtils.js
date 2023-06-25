@@ -1,4 +1,3 @@
-
 const jsonHandler = (response) => {
   return response.json();
 };
@@ -11,7 +10,7 @@ const getPostRequestHeader = () => {
 };
 
 const getAuthHeader = () => {
-  const tokenString = localStorage.getItem('token');
+  const tokenString = localStorage.getItem("token");
   const userToken = JSON.parse(tokenString);
   return {
     Authorization: "Bearer " + userToken?.token,

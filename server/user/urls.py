@@ -1,8 +1,9 @@
 from django.urls import path
-from .views import GetUserView
 from rest_framework.authtoken import views
+
+from .views import GetUserViewSet
 
 urlpatterns = [
     path('auth/', views.obtain_auth_token),
-	path('', GetUserView.as_view(), name='getuser'),
+	path('', GetUserViewSet.as_view({'get':'retrieve'}), name='getuser'),
 ]

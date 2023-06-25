@@ -1,45 +1,54 @@
-
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from django.core.paginator import EmptyPage, Paginator
+from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from django.core.paginator import Paginator,EmptyPage
 
-from .serializers import ChatRoomSerializer,MessageSerializer
-from .models import ChatRoom,ChatMessage
+from .models import ChatMessage, ChatRoom
+from .serializers import ChatRoomSerializer, MessageSerializer
 
-class RoomView(APIView):
-    def get(self, request, pk=None, *args, **kwargs):  
+
+class RoomViewSet(viewsets.ViewSet):
+    def list(self, request):  
         rooms = ChatRoom.objects.all()
         serializer = ChatRoomSerializer(rooms, many=True)
         return Response({'data': serializer.data})    
     
-    def post(self, request):
+    def create(self, request):
         room_data = request.data
         newRoom = ChatRoom.objects.get_or_create(
             name=room_data['name']
         )
+        newRoom[0].save()
+        serializer = ChatRoomSerializer(ChatRoom.objects.all(), many=True)
 
-        serializer = ChatRoomSerializer(newRoom[0])
-        return Response({'status':'success','data':serializer.data, 'new':newRoom[1]})
-    
-    def put(self, request, *args, **kwargs):
-        id = self.kwargs["pk"]
-        room_object = ChatRoom.objects.get(id=id)
-        room_object.member.add(request.user.id)
+        if newRoom[1]:
+            channel_layer = get_channel_layer()
 
-        serializer = ChatRoomSerializer(room_object)
-        return Response({'status':'success','data':serializer.data})
+            async_to_sync(channel_layer.group_send)(
+                    'room_list',
+                    {
+                        'type': 'chat_message',
+                        'message':{
+                            'action': 'list_room',
+                            'list':  serializer.data
+                        }
+                    }
+                )
 
-    def delete(self, request, *args, **kwargs):
-        if 'pk' in self.kwargs:
-            ChatRoom.objects.filter(pk=self.kwargs["pk"]).delete()
+        return Response({'status':'success', 'new':newRoom[1]})
+
+    def destroy(self, request, pk=None):
+        if pk:
+            ChatRoom.objects.filter(pk=pk).delete()
             return Response({'status':'success'})
 
-class MessageView(APIView):
-    def get(self, request, pk=None, *args, **kwargs):
+class MessageViewSet(viewsets.ViewSet):
+    def list(self, request, pk=None):
         page = request.query_params.get('page', 1)
         page_size = request.query_params.get('page_size', 20)
-        if 'room' in self.kwargs:  
-            messages = ChatMessage.objects.filter(room_id = self.kwargs['room']).order_by('-timestamp')
+        if pk:  
+            messages = ChatMessage.objects.filter(room_id = pk).order_by('-timestamp')
 
             paginator = Paginator(messages, page_size)
 
@@ -52,21 +61,30 @@ class MessageView(APIView):
             
             return Response({'last_page':paginator.num_pages,'data':serializer.data})
      
-    def post(self, request):
+    def create(self, request):
         message_data = request.data
         newMessage = ChatMessage.objects.create(
             room_id = message_data['room'],
-            user_id = message_data['user'],
-            message = message_data['message'],
-            status = message_data['status'],
+            user_id = request.user.id,
+            message = message_data['message']
         )
         newMessage.save()
         serializer = MessageSerializer(newMessage)
-        return Response({'status':'success','data':serializer.data})
+        data = serializer.data
+        data['action'] = 'message'
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+                'room_' + str(message_data['room']),
+                {
+                    'type': 'chat_message',
+                    'message': data
+                }
+            )
+
+        return Response({'status':'success','data':data})
     
-
-    def delete(self, request, *args, **kwargs):
-        if 'pk' in self.kwargs:
-            ChatRoom.objects.filter(pk=self.kwargs["pk"]).delete()
-            return Response({'status':'success'})
-
+    def destroy(self, request, pk=None):
+        if pk:
+            ChatMessage.objects.filter(pk=pk,user_id = request.user.id).delete()
+            return Response({'status':'success','data':None})
